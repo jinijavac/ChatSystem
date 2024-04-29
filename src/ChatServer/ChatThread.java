@@ -18,7 +18,7 @@ public class ChatThread extends Thread {
     private PrintWriter historyWriter;
 
 
-    public ChatThread(Socket socket, Map<String, PrintWriter> chatClients, Map<Integer, Set<String>> chatRoom, Map<Integer, String> chatTitles) {
+    public ChatThread(Socket socket, Map<String, PrintWriter> chatClients, Map<Integer, Set<String>> chatRoom, Map<Integer, String> chatTitles, Map<Integer, String> chatPasswords) {
         this.socket = socket;
         this.chatClients = chatClients;
         this.chatRoom = chatRoom;
@@ -48,7 +48,7 @@ public class ChatThread extends Thread {
             e.printStackTrace();
         }
     }
-    
+
 
     @Override
     public void run() {
@@ -80,7 +80,7 @@ public class ChatThread extends Thread {
                     listRoomUsers();
                 } else if (msg.startsWith("/whisper")) {
                     whisper(msg);
-                }else if (msg.startsWith("/all")) {
+                } else if (msg.startsWith("/all")) {
                     sendToAll(msg);
                 } else {
                     broadcast("[" + id + "] : " + msg); //채팅방 안에서만 메세지 보내기 가능
@@ -102,29 +102,42 @@ public class ChatThread extends Thread {
     public void createRoom(String msg) {
         String[] parts = msg.split(" ");
         if (parts.length < 2) {
-            out.println("방 제목을 입력해주세요.");
+            out.println("방 제목을 입력해주세요");
             return;
         }
 
         String roomTitle = parts[1].trim();
         if (roomTitle.isEmpty()) {
-            out.println("방 제목을 입력해주세요.");
+            out.println("방 제목을 입력해주세요");
             return;
         }
 
         int roomId = chatRoom.size() + 1;
         chatRoom.put(roomId, new HashSet<>());
         chatTitles.put(roomId, roomTitle);
-        out.println("방 " + roomTitle + "가 생성되었습니다.");
+
+        out.println("비밀번호를 설정하세요 (비밀번호 설정 X --> Enter)");
+        String password = null;
+        try {
+            password = in.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (!password.isEmpty()) {
+            chatPasswords.put(roomId, password);
+            out.println("방 " + roomTitle + "가 생성되었습니다 (비밀번호 설정 완료!)");
+        } else {
+            out.println("방 " + roomTitle + "가 생성되었습니다");
+        }
         currentRoom = roomId;
     }
-
 
 
     public void joinRoom(String msg) {
         String[] parts = msg.split(" ");
         if (parts.length < 2) {
-            out.println("방 번호를 입력해주세요.");
+            out.println("방 번호를 입력해주세요");
             return;
         }
 
@@ -132,18 +145,37 @@ public class ChatThread extends Thread {
         try {
             roomId = Integer.parseInt(parts[1]);
         } catch (NumberFormatException e) {
-            out.println("방 번호는 숫자로 입력해주세요.");
+            out.println("방 번호는 숫자로 입력해주세요");
             return;
         }
         if (!chatRoom.containsKey(roomId)) {
-            out.println("존재하지 않는 방 번호입니다.");
+            out.println("존재하지 않는 방 번호입니다");
             return;
         }
         String roomTitle = chatTitles.get(roomId);
+
+        // 비밀번호 확인
+        String password = chatPasswords.get(roomId);
+        if (password != null && !password.isEmpty()) {
+            out.println("비밀번호를 입력하세요:");
+            try {
+                String userEnteredPassword = in.readLine().trim();
+                if (!userEnteredPassword.equals(password)) {
+                    out.println("비밀번호가 틀렸습니다");
+                    return;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
         currentRoom = roomId;
-        out.println("방 " + roomTitle + "에 입장하셨습니다.");
-        broadcast(id + "님이 방에 입장했습니다.");
+        out.println("방 " + roomTitle + "에 입장하셨습니다");
+        broadcast(id + "님이 방에 입장했습니다!");
         chatRoom.get(roomId).add(id);
+        //???
+        //비밀번호를 생성한 클라이언트만 비밀번호 입력이 되고
+        //나머지는 그냥 입장이 됨.... WHy?ㅜ
     }
 
         public void exitRoom () {
@@ -194,14 +226,14 @@ public class ChatThread extends Thread {
                 pw.println(id + "님으로부터 온 귓속말 : " + message);
                 out.println("귓속말을 보냈습니다");
             } else {
-                out.println("수신자를 찾을 수 없습니다.");
+                out.println("수신자를 찾을 수 없습니다");
             }
         }
     public void sendToAll(String msg) {
         String message = msg.substring(5); // "/all" 제외한 메시지 부분
 
         if (message.isEmpty()) {
-            out.println("메시지를 입력해주세요.");
+            out.println("메시지를 입력해주세요");
             return;
         }
 
@@ -212,7 +244,7 @@ public class ChatThread extends Thread {
 
         public void broadcast(String msg){
             if (currentRoom == 0) {
-                out.println("방에 입장해주세요.");
+                out.println("방에 입장해주세요");
                 return;
             }
 
