@@ -5,16 +5,19 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ChatServer {
-    private static Map<String, PrintWriter> chatClients = new HashMap<>();
-    private static Map<String, Integer> chatRoom = new HashMap<>();
+    private static Map<String, PrintWriter> chatClients = new HashMap<>(); //<클라이언트 아이디, 메세지 출력>
+    private static Map<Integer, Set<String>> chatRoom = new HashMap<>(); //<방 번호, 방에 입장한 클라이언트 ID> --> 방 만들기!
+    private static Map<Integer, String> chatTitles = new HashMap<>(); //<방 번호, 방 제목> --> 방 제목 저장
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(12345)){
+        try (ServerSocket serverSocket = new ServerSocket(9999)){
             System.out.println("서버 준비 완료!");
             while (true){
-                Socket socket = serverSocket.accept();
-                new ChatThread(socket, chatClients, chatRoom).start();
+                //연결 끊기지 않게 반복
+                Socket socket = serverSocket.accept(); //클라이언트 쪽에서 accept 해주면 시작
+                new ChatThread(socket, chatClients, chatRoom, chatTitles ).start();
             }
         }catch (Exception e){
             e.printStackTrace();
