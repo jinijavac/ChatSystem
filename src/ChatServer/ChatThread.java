@@ -60,6 +60,7 @@ public class ChatThread extends Thread {
                 "/users : 현재 접속 중인 사용자 목록\n" +
                 "/roomusers : 현재 방에 있는 사용자 목록\n" +
                 "/whisper [수신자] [메시지] : 귓속말 보내기\n" +
+                "/all [메시지] : 전체 메시지 브로드캐스트\n" +
                 "==========================");
 
         String msg = null;
@@ -79,6 +80,8 @@ public class ChatThread extends Thread {
                     listRoomUsers();
                 } else if (msg.startsWith("/whisper")) {
                     whisper(msg);
+                }else if (msg.startsWith("/all")) {
+                    sendToAll(msg);
                 } else {
                     broadcast("[" + id + "] : " + msg); //채팅방 안에서만 메세지 보내기 가능
                 }
@@ -194,6 +197,18 @@ public class ChatThread extends Thread {
                 out.println("수신자를 찾을 수 없습니다.");
             }
         }
+    public void sendToAll(String msg) {
+        String message = msg.substring(5); // "/all" 제외한 메시지 부분
+
+        if (message.isEmpty()) {
+            out.println("메시지를 입력해주세요.");
+            return;
+        }
+
+        for (PrintWriter writer : chatClients.values()) {
+            writer.println("[전체 메시지] " + message);
+        }
+    }
 
         public void broadcast(String msg){
             if (currentRoom == 0) {
