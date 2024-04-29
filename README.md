@@ -82,26 +82,11 @@
 6. 메시지 브로드캐스트: 사용자가 보낸 메시지는 채팅방에 있는 모든 사용자에게 전송됩니다.
 7. 채팅 기록 저장: 채팅 내용은 텍스트 파일에 저장됩니다.
 
-## ChatServer 클래스
-### 기능
+### ChatServer 클래스
 - 채팅방 관리: 채팅방을 생성하고, 채팅방 목록을 조회하며, 사용자들을 채팅방에 입장시키는 기능을 제공합니다.
 - 사용자 관리: 클라이언트의 접속을 받아들이고, 클라이언트 간의 채팅을 관리합니다.
 
-
-## ChatThread 클래스
-### 필드
-- Socket socket: 클라이언트와의 통신을 담당하는 소켓입니다.
-- PrintWriter out: 클라이언트에게 메시지를 보내는 출력 스트림입니다.
-- BufferedReader in: 클라이언트로부터 메시지를 읽는 입력 스트림입니다.
-- String id: 사용자의 아이디입니다.
-- Map<String, PrintWriter> chatClients: 사용자의 아이디와 해당 사용자에게 메시지를 보내는 출력 스트림을 매핑합니다.
-- Map<Integer, Set<String>> chatRoom: 채팅방 번호와 해당 채팅방에 속한 사용자 아이디의 집합을 매핑합니다.
-- Map<Integer, String> chatTitles: 채팅방 번호와 해당 채팅방의 제목을 매핑합니다.
-- Map<Integer, String> chatPasswords: 채팅방 번호와 해당 채팅방의 비밀번호를 매핑합니다.
-- int currentRoom: 사용자가 현재 속한 채팅방의 번호입니다.
-- File chatHistoryFile: 채팅 기록을 저장하는 파일입니다.
-- PrintWriter historyWriter: 채팅 기록을 파일에 쓰는 출력 스트림입니다.
-
+### ChatThread 클래스
 ### 메서드
 - run(): 쓰레드가 시작되면 호출되는 메서드입니다. 클라이언트의 메시지를 받아 처리합니다.
 - listRoom(): 현재 존재하는 채팅방 목록을 클라이언트에게 보여줍니다.
